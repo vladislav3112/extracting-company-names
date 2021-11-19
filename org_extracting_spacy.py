@@ -17,10 +17,9 @@ with open('100k_news.csv', 'r',encoding='utf-8') as f:
             news_list.append(article)
         else:
             print(handled_row)
-#model_sp = en_core_web_lg.load()
-#for ent in model_sp(english_text).ents:
-#  print(ent.text.strip(), ent.label_)
+
 #  slice first 10000 articles
+news_list = news_list[:10000]
 companies_found = set()
 
 model_sp = spacy.load('en_core_web_lg')
@@ -29,7 +28,7 @@ for list in news_list:
         if (ent.label_=='ORG'):
             companies_found.add(ent.text.strip())
 
-with open('apple.txt','a',encoding='utf-8') as orgs_txt:
+with open('finance companies.txt','a',encoding='utf-8') as orgs_txt:
     for company in companies_found:
         ss = ')'
         #orgs_txt.write('\n')

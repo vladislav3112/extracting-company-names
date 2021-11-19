@@ -1,6 +1,12 @@
 from os import write
 import csv
 import numpy as np
+import difflib
+from Levenshtein import distance
+
+#from sklearn.cross_validation import cross_val_score
+#from sklearn.grid_search import RandomizedSearchCV
+
 
 with open('organisations list.txt', 'r', encoding='utf-8') as file:
     companies_text = file.read()
@@ -21,15 +27,15 @@ with open('company-tickers.txt','a',encoding='utf-8') as orgs_txt:
 # text similarity ways
 # 1. tf-idx 
 # 2. levenstain - worsest
-# 3. networts (bart maybe)
+# 3. networts (bert maybe)
 # 4. 
 
 # 1:
-import difflib
-from Levenshtein import distance
-a = 'Apple Inc.'# 0.6 res
-b = 'Apple Inc. Common Stock'
+
+a = 'Coca-Cola Femsa Sa'# 0.67 res ! different companies
+b = 'Coca-Cola'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
+print("coke")
 print(seq.ratio())
 
 a = 'Apple Inc.'# 0.84 res
@@ -37,8 +43,8 @@ b = 'Apple Co.'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
 print(seq.ratio())
 
-a = 'Apple'#0.66 res
-b = 'Appleby 46'
+a = 'Appble'#0.76 res
+b = 'Appleby'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
 print(seq.ratio(), " Appleby")
 
@@ -73,10 +79,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 sentence_embeddings = model.encode(sentences)
 
-print(cosine_similarity(
-    [sentence_embeddings[0]],
-    sentence_embeddings[1:]
-))
+
 
 #result:    1-3 best pairs
 #           4-5 0.976 score
