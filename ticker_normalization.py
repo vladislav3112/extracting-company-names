@@ -1,6 +1,6 @@
 from os import write
 import csv
-import numpy as np
+import pandas as pd
 import re
 country_names = {' USA',' Australia',' China',' Spain'} #worth it or not?
 stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Warrants',' Units', ' Unit',
@@ -35,24 +35,20 @@ def string_normalize(str):
         str = str[0:len(str)-1]
     return str
 
-companies_list = []
-nasdaq_dict = {}    #ticker - company
-prev_str = ''
-with open('company-tickers.txt', 'r', encoding='utf-8') as file:
-    reader = csv.reader(file)
-    for row in reader:
-        str = row[0].split(' ')
-        ticker = str[0]
-        del(str[0])
-        str = ' '.join(str)
-        if(ticker.find('^') == -1 and ticker_is_primary(str)):
-            str = string_normalize(str)
-            if(prev_str != str):
-                nasdaq_dict[ticker] = str
-                prev_str = str
+df_tickers = pd.read_csv('company-tickers.csv',index_col=False,header=0)
+names = df_tickers['Name']
+tickers = df_tickers['Symbol'] 
+df_tickers = df_tickers[df_tickers.Symbol.str.find('^')==-1]
+df_tickers = df_tickers[df_tickers.Symbol.str.len() < 5]
+ticker_indicies = []
 
-with open('normalized tickers.txt','a',encoding='utf-8') as orgs_txt:
-    for elem in nasdaq_dict:
-        orgs_txt.write('\n')
-        tmp = elem+' '+nasdaq_dict[elem]
-        orgs_txt.write(tmp)
+for index,row in df_tickers.iterrows():
+    item = row['Name']
+    if(ticker_is_primary(item)):
+        ticker_indicies.append(index)
+        company_name = string_normalize(item)
+        df_tickers.at[index,'Name'] = company_name
+df_tickers = df_tickers[df_tickers.index.isin(ticker_indicies)]
+
+    
+df_tickers.to_csv("normalized tickers.csv",index=False)

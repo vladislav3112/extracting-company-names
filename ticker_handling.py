@@ -3,26 +3,14 @@ import csv
 import numpy as np
 import difflib
 from Levenshtein import distance
-
-#from sklearn.cross_validation import cross_val_score
-#from sklearn.grid_search import RandomizedSearchCV
-
-
-with open('organisations list.txt', 'r', encoding='utf-8') as file:
-    companies_text = file.read()
+import pandas as pd
 
 headline_list = []
 news_list = []
 nasdaq_dict = {}    #ticker - company
-with open('nasdaq_tickers.csv', 'r',encoding='utf-8') as f:
-    reader = csv.reader(f)
-    for row in reader:
-            nasdaq_dict[row[0]] = row[1]
-with open('company-tickers.txt','a',encoding='utf-8') as orgs_txt:
-    for elem in nasdaq_dict:
-        #orgs_txt.write('\n')
-        tmp = elem+' '+nasdaq_dict[elem]
-        #orgs_txt.write(tmp)
+nasdaq_df = pd.read_csv('nasdaq_tickers.csv',header=0)
+nasdaq_df = nasdaq_df[['Symbol','Name']]
+nasdaq_df.to_csv("company-tickers.csv",index=False)
 
 # text similarity ways
 # 1. tf-idx 

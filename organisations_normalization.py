@@ -51,11 +51,15 @@ def string_normalize(str):
     return str
 
 companies_list = []
-with open('bert-companies.txt', 'r', encoding='utf-8') as file:
+with open('bert-markets.txt', 'r', encoding='utf-8') as file:
     reader = csv.reader(file)
     for row in reader:
+        if(len(row)==0):
+            continue
         str = row[0]
-        
+        if(str.find('\t')!=-1):
+            companies_list.append(str)
+            continue
         str = str.split(' ')
         for elem in str:
             if 'Co' == elem:
@@ -68,7 +72,7 @@ with open('bert-companies.txt', 'r', encoding='utf-8') as file:
         if(company_is_valid(str)):
             companies_list.append(str)
 
-with open('bert-companies-normalized.txt','a',encoding='utf-8') as orgs_txt:
+with open('bert-markets-normalized.txt','a',encoding='utf-8') as orgs_txt:
     for elem in companies_list:
         orgs_txt.write('\n')
         tmp = elem

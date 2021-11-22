@@ -3,6 +3,7 @@ import csv
 import re
 import difflib
 import numpy as np
+import pandas as pd
 from transformers import pipeline, AutoModelForTokenClassification, AutoTokenizer
 
 news_list = []
