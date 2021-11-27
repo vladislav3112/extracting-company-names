@@ -7,29 +7,12 @@ import pandas as pd
 from transformers import pipeline, AutoModelForTokenClassification, AutoTokenizer
 
 news_list = []
-#def labeling_bert_stats(list, standard_list):
-#    for news_company in list:
-#        max_metrix = 0.0
-#        results = []
-#        for company in standard_list:
-#            metrix = difflib.SequenceMatcher(None,news_company,company).ratio()
-#            if metrix > max_metrix:
-#                max_metrix = metrix
-#                max_elem = company
-#            if max_metrix > 0.90:
-#                results.append(news_company + '|\t|' +company + '|\t|' + max_elem + '|\t|' + str(max_metrix))
-#    return results
 
 #tickers for labeled version
-def get_tickers_companies_from_file(company_dict):
-    with open('normalized tickers.txt', 'r', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            string = row[0].split(' ')
-            ticker = string[0]
-            del(string[0])
-            string = ' '.join(string)
-            company_dict[ticker] = string
+def get_tickers_companies_from_file():
+    df_tickers = pd.read_csv('normalized tickers.csv',index_col=False,header=0)
+    company_dict = dict(zip(df_tickers['Symbol'], df_tickers['Name']))
+    return company_dict
 
 # goal: get all labeled companies for every article with tickers
 # we must be able to restore which company from which article
@@ -48,24 +31,21 @@ def get_tickers_companies_from_article(news,company_list,nasdaq_dict):
                 if supposed_ticker in nasdaq_dict:
                     curr_list.append(nasdaq_dict[supposed_ticker]+'\t')
                     isCompanyFound = True
-                #print(supposed_ticker)
-                #print(supposed_ticker.partition('.')[0])
     if(isCompanyFound):
         company_list.append(curr_list)
-        news_list.append(article)   #somehow it worked
+        news_list.append(news) 
 
 nasdaq_tickers = {}
 company_list = []
-get_tickers_companies_from_file(nasdaq_tickers)
+nasdaq_tickers = get_tickers_companies_from_file()
 
-with open('100k_news.csv', 'r',encoding='utf-8') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        
-        handled_row = ''.join(row).split('\t')
-        if(len(handled_row) > 7 and handled_row[7]=='Markets'):    # to filter only labeled data otherwise len(handled_row) > 5
-            article = handled_row[6].replace("\'s","s")
-            get_tickers_companies_from_article(article,company_list,nasdaq_tickers)
+df_news_header = ['uuid default','date_created','date_modified','date_published','headline','description','article','article_section','author_type','author_names','reuters_keywords','Append_1','Append_2','Append_3','Append_4','Append_5','url1','url2']
+df_news = pd.read_csv('100k_news.csv',sep='\t',index_col=False,names=df_news_header) 
+labeled_df = df_news.loc[df_news['article_section']=='Markets'] # to filter only labeled data otherwise len(handled_row) > 5
+labeled_df['article'] = labeled_df['article'].replace({"\'s","s"},regex=True)
+for index,row in labeled_df.iterrows():
+    article = row['article']
+    get_tickers_companies_from_article(article,company_list,nasdaq_tickers)
                 
 
        
@@ -73,7 +53,8 @@ with open('100k_news.csv', 'r',encoding='utf-8') as f:
 #  slice first X articles or wait too long
 #news_list = news_list[:1000]
 companies_found = []
-
+res_df = pd.DataFrame(data=news_list,columns=['News'])
+res_df.to_csv("labeled_news.csv",index=False)
 
 #building model
 from transformers import pipeline
@@ -108,15 +89,9 @@ for article in news_list:
     
     article_idx += 1
     companies_found.append('\t'+str(article_idx))
-    #stats = labeling_bert_stats(companies_found,company_list[article_idx])
-    #print(stats)
+
 
 with open('bert-markets.txt','a',encoding='utf-8') as orgs_txt:
     for company in companies_found:
         orgs_txt.write('\n')
         orgs_txt.write(company)
-
-with open('labeled-companies.txt','a',encoding='utf-8') as orgs_txt:
-    for company in company_list:
-        orgs_txt.write('\n')
-        orgs_txt.write(''.join(company))
