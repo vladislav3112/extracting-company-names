@@ -1,5 +1,6 @@
 from os import write
 import csv
+import pandas as pd
 import numpy as np
 import re
 country_names = {' USA',' U S',' Australia',' China',' Spain'}
@@ -50,30 +51,21 @@ def string_normalize(str):
     
     return str
 
-companies_list = []
-with open('bert-markets.txt', 'r', encoding='utf-8') as file:
-    reader = csv.reader(file)
-    for row in reader:
-        if(len(row)==0):
-            continue
-        str = row[0]
-        if(str.find('\t')!=-1):
-            companies_list.append(str)
-            continue
-        str = str.split(' ')
-        for elem in str:
-            if 'Co' == elem:
-                str.remove(elem)
-            if '' == elem:
-                str.remove(elem)
-        str = ' '.join(str)
+df_orgs = pd.read_csv('bert_res_companies200.csv',index_col=False,header=0)
+names = df_orgs['Name']
 
-        str = string_normalize(str)
-        if(company_is_valid(str)):
-            companies_list.append(str)
-
-with open('bert-markets-normalized.txt','a',encoding='utf-8') as orgs_txt:
-    for elem in companies_list:
-        orgs_txt.write('\n')
-        tmp = elem
-        orgs_txt.write(tmp)
+org_indicies = []
+for index,row in df_orgs.iterrows():
+    items = row['Name'].split('\t')
+    items = [item for item in items if len(item) > 2 and ("." not in item or len(item) > 8) and "#" not in item] #if item is too short and have dot - it either ticker or not company
+    #\t split and join back
+    if(items):
+        org_indicies.append(index)
+        companies_list = ''
+        for item in items:
+            company_name = string_normalize(item)
+            companies_list += company_name + '\t'
+        companies_list = companies_list[:-1]
+        df_orgs.at[index,'Name'] = companies_list
+df_orgs = df_orgs[df_orgs.index.isin(org_indicies)]
+df_orgs.to_csv("bert-markets-normalized.csv",index=False)

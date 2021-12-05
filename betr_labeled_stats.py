@@ -1,47 +1,46 @@
 from os import write
 import csv
+import pandas as pd
 import numpy as np
 import difflib
 
-headline_list = []
-news_company_list = []
+bert_company_list = []
 nasdaq_dict = {}    #ticker - company
-big_str = ''
-with open('bert-markets-normalized.txt', 'r', encoding='utf-8') as file:
-    reader = csv.reader(file)
-    for row in reader:
-        big_str += ''.join([i for i in row[0] if not i.isdigit()])+'\n'#remove all digits
-    news_company_list = big_str.split('\t')
 
-#news_company_list = news_company_list[:1000]
-standard_companies = []
-with open('labeled-companies.txt', 'r', encoding='utf-8') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        string = row[0].split('\t')
-        standard_companies.append(string[:-1])
+df_bert = pd.read_csv('bert-markets-normalized.csv',index_col=False,header=0)
+df_tickers = pd.read_csv('normalized tickers.csv',index_col=False,header=0)
+df_labels = pd.read_csv('labeled_companies.csv',index_col=False,header=0)
 
 #matching:
-result_array = []
-max_elem = ''
-sentences = []
-stats = []
-for news_company in news_company_list:
-    news_company = news_company.split('\n')
-    for elem in news_company:   
-        if(elem):
-            max_metrix = 0.0
-            for st_news in standard_companies:
-                metrix = difflib.SequenceMatcher(None,news_company,st_news).ratio()
+res_df = pd.DataFrame(columns=['Bert company','Real company','Metrix'])
+real_companies_num =  0
+bert_companies_num =  0
+found_num = 0
+not_found_num = 0
+matches = 0
 
-                if metrix > max_metrix:
-                    max_metrix = metrix
-                    max_elem = st_news
-            if max_metrix > 0.86:
-                result_array.append(news_company + '|\t|' +nasdaq_dict[max_elem] + '|\t|' + max_elem + '|\t|' + str(max_metrix))
-                stats+=1
-with open('labeled-stats.txt','a', encoding='utf-8') as orgs_txt:
-    orgs_txt.write('company from article\t actual company\t ticker\t metric value')
-    for elem in result_array:
-        orgs_txt.write('\n')
-        orgs_txt.write(elem)
+ARTICLES_NUM = 200
+
+labeled_companies = df_labels['Name']
+labeled_companies = labeled_companies[:ARTICLES_NUM]
+bert_companies = df_bert['Name']
+
+for idx in range (ARTICLES_NUM):
+    labeled = labeled_companies[idx].split('\t')
+    bert = bert_companies[idx].split('\t')
+    max_metrix = 0.0
+    for elem in labeled:
+        for bert_elem in bert:
+            metrix = difflib.SequenceMatcher(None,elem.lower(),bert_elem.lower()).ratio()
+            if metrix > max_metrix:
+                max_metrix = metrix
+                max_elem = bert_elem
+        if max_metrix > 0.69:
+            res_df.loc[found_num]=[elem,max_elem,max_metrix]
+            found_num += 1
+            max_metrix = 0.0
+        else:
+            not_found_num += 1
+res_df.to_csv("bert res.csv",index=False)
+print("not found", not_found_num)
+print("found", found_num)
