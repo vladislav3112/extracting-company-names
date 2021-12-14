@@ -7,11 +7,11 @@ stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share','
                 ' Co.',' Company',' Corp',' Inc.',' Ltd'} #TEMP
 
 def ticker_is_primary(str):
-    if (str.find('due') == -1 and str.find('Due') == -1 and len(str) < 80 and str.find(' Warrant') == -1 and str.find(' warrant') == -1 and str.find(' Right') == -1 and str.find('%') == -1):
+    if (str.find(' due') == -1 and str.find(' Due') == -1 and len(str) < 80 and str.find(' Warrant') == -1 and str.find(' warrant') == -1 and str.find(' Right') == -1 and str.find('%') == -1):
         return True
     else:
         return False
-special_chars ={'.',',','(',')',':','*','/',"'"}
+special_chars ={'.',',','(',')',':','*','/',"'","&"}
 
 def string_normalize(str):
     

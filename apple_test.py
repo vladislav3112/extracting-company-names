@@ -3,6 +3,7 @@ import spacy
 import spacy.cli
 import csv
 import numpy as np
+import difflib
 
 headline_list = []
 news = []

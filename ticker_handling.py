@@ -31,15 +31,15 @@ b = 'Apple Co.'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
 print(seq.ratio())
 
-a = 'Appble'#0.76 res
-b = 'Appleby'
+a = 'Ford Motors'#0.76 res
+b = 'Boston'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
-print(seq.ratio(), " Appleby")
+print(seq.ratio(), " Ford")
 
-a = 'The New York Times Co'#0.79 res  !!!THE!!!
-b = 'New York Times Company'
+a = 'Bank Of America Merrill Lynch'#0.79 res  !!!THE!!!
+b = 'Bank Of America'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
-print(seq.ratio())
+print(seq.ratio()," America")
 #interesting, worth to check( apple and pineapple <0.65 score)
 
 #2
