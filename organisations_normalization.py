@@ -6,7 +6,7 @@ import re
 country_names = {' USA',' U S',' Australia',' China',' Spain'}
 stop_words = {' Company',' Corp',' Inc',' Ltd','.Com'}
 
-special_chars ={'.','-',',','(',')',':','*','/',"'", '&'}
+special_chars ={'.',',','(',')',':','*','/',"'",'"', '&','?'}
 # below - option
 # and (str.find('Co') != -1 or str.find('Inc') != -1 or str.find('Corp') != -1 or str.find('Ltd') != -1 or str.find('Company') != -1)
 def company_is_valid(str):
@@ -17,14 +17,14 @@ def company_is_valid(str):
 
 def string_normalize(str):
     
-    #step 0: remove 's
+    #step 0: remove 's and spzces remove
     str = str.replace("'s",'')
 
     #step 1: legal ang special charachter removal:
     str = ''.join(re. sub(r'\([^)]*\)', '', str))
     #step 2: case normalization
     str = str.title()
-    #spaces removal
+    
     for char in special_chars:
         str = str.replace(' '+char+' ',char)
         str = str.replace(' '+char,char)

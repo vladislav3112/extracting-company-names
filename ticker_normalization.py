@@ -1,17 +1,15 @@
-from os import write
-import csv
 import pandas as pd
 import re
 country_names = {' USA',' Australia',' China',' Spain'} #worth it or not?
 stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Warrants',' Units', ' Unit',
-                ' Co.',' Company',' Corp',' Inc.',' Ltd'} #TEMP
+                ' Co.',' Company',' Corp',' Inc.',' Ltd',' Incorporated', ' Group',' Holdings'} #TEMP
 
 def ticker_is_primary(str):
     if (str.find(' due') == -1 and str.find(' Due') == -1 and len(str) < 80 and str.find(' Warrant') == -1 and str.find(' warrant') == -1 and str.find(' Right') == -1 and str.find('%') == -1):
         return True
     else:
         return False
-special_chars ={'.',',','(',')',':','*','/',"'","&"}
+special_chars ={'.',',','(',')',':','*','/',"'","&","?"}
 
 def string_normalize(str):
     
@@ -29,6 +27,7 @@ def string_normalize(str):
     for name in country_names:
         str = str.replace(name,'')
     str = str.replace('Corporation','Corp')
+    str = str.replace(' Of ',' ')
     for char in special_chars:
         str = str.replace(char,'')
     if(str[-1]==' '):
@@ -51,4 +50,4 @@ for index,row in df_tickers.iterrows():
 df_tickers = df_tickers[df_tickers.index.isin(ticker_indicies)]
 
     
-df_tickers.to_csv("normalized tickers.csv",index=False)
+df_tickers.to_csv("normalized tickers holdings.csv",index=False)
