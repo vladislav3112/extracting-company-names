@@ -11,7 +11,8 @@ news = []
 #for ent in model_sp(english_text).ents:
 #  print(ent.text.strip(), ent.label_)
 #  slice first 10000 articles
-
+str = "And Dell Inc"
+print(str[3:])
 import nltk
 from nltk import ne_chunk
 from nltk.tokenize import word_tokenize

@@ -1,8 +1,8 @@
 import pandas as pd
 import re
 #country_names = {' USA',' Australia',' China',' Spain'} #worth it or not?
-stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," Plc"," Sab "," NV"} #TEMP
-special_words = {' Group',' Holdings'}
+stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," Plc"," Sab "," NV",' Group',' Holdings'} #TEMP
+#special_words = {' Group',' Holdings'}
 
 def ticker_is_primary(str):
     if (str.find(' due') == -1 and str.find(' Due') == -1 and len(str) < 80 and str.find(' Warrant') == -1 and str.find(' warrant') == -1 and str.find(' Right') == -1 and str.find('%') == -1):
@@ -31,14 +31,15 @@ def string_normalize(str):
     #step xx: remove words that useless for matching
     for word in stop_words:
         str = str.partition(word)[0]
-    for word in special_words:
-        str = str.partition(word)[0] + str.partition(word)[1]
+    #for word in special_words:
+    #    str = str.partition(word)[0] + str.partition(word)[1]
     
     if(str.find("Co") == len(str) - len("Co")):
         str = str[:-len("Co")]
     if(len(str) > 2 and str.find("And") == len(str) - len("And")):
         str = str[:-len("And")]
     str = str.replace("Hp","Hewlett-Packard")
+    #str = str.replace('Kkr','Kohlberg Kravis Roberts')
     str = str.replace('  ',' ')
     if(str[-1]==' '):
         str = str[0:len(str)-1]
