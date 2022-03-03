@@ -40,6 +40,9 @@ def string_normalize(str):
         str = str[:-len("And")]
     str = str.replace("Hp","Hewlett-Packard")
     #str = str.replace('Kkr','Kohlberg Kravis Roberts')
+    str = str.replace('United States','US')
+    str = str.replace('Us','US')
+    str = str.replace('The ','')
     str = str.replace('  ',' ')
     if(str[-1]==' '):
         str = str[0:len(str)-1]

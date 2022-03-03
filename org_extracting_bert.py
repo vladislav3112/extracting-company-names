@@ -14,7 +14,7 @@ for elem in df_news['News']:
         news_list.append(elem)
 
 stop_words = {"Inc","Co","Corp","Ltd","Company","Holdings","Group","Incorporated","SA","AG","SAB"}
-conj_words = {"of","and"}
+conj_words = {"of"}
 def get_alice_companies(article):
     companies = ""
     all_words = article.split()
