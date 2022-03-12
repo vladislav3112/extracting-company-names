@@ -4,35 +4,32 @@ import pandas as pd
 import numpy as np
 import re
 country_names = {' USA',' U S',' Australia',' China',' Spain'}
-stop_words = {' Company',' Corp',' Inc',' Ltd','.Com'}
+bounder_words = {'And','Of','and','of','Shares',"-"," "}
+last_words = {'Co'}
+stop_words = {' Company',' Corp',' Inc',' Ltd','.Com', ' Incorporated',' Holdings',' Co ',' Securities',' Asset',' Plc',' Group'}#' Incorporated', ' Group',' Holdings' - risky option
 
 special_chars ={'.',',','(',')',':','*','/',"'",'"', '&','?'}
-# below - option
-# and (str.find('Co') != -1 or str.find('Inc') != -1 or str.find('Corp') != -1 or str.find('Ltd') != -1 or str.find('Company') != -1)
-def company_is_valid(str):
-    if ((len(str) > 5)):
-        return True
-    else:
-        return False
 
 def string_normalize(str):
     
-    #step 0: remove 's and spzces remove
+    #step 0: remove 's and spaces removal
+    str = ''.join(re.sub(' +', ' ', str))
     str = str.replace("'s",'')
-
+    str = str.replace(' - ','-')
     #step 1: legal ang special charachter removal:
-    str = ''.join(re. sub(r'\([^)]*\)', '', str))
+    str = ''.join(re.sub(r'\([^)]*\)', '', str))
     #step 2: case normalization
-    str = str.title()
+    if(str.islower()):
+        str = str.title()
     
     for char in special_chars:
         str = str.replace(' '+char+' ',char)
         str = str.replace(' '+char,char)
-    
-    
 
     for word in stop_words:
         str = str.partition(word)[0]
+        
+    
 
     str = str.replace('J&J','JohnsonJohnson')
     
@@ -42,16 +39,41 @@ def string_normalize(str):
     for name in country_names:
         str = str.replace(name,'')
     str = str.replace('Corporation','Corp')
-    
+    str = str.replace('Cos','Companies')
+    str = str.replace(' Of ',' ')
+    str = str.replace('The ','')
+    str = str.replace(' U S','US')
     #step 4: special cases
-    #xxx
-    str = str.replace('IBM','International Business Machines')
     
-    #str.replace('Instagram','Facebook')
+    str = str.replace('United States','US')
+    str = str.replace('Jnj','JohnsonJohnson')
+    str = str.replace('Jj','JohnsonJohnson')
+    str = str.replace('Ibm','International Business Machines')
+    str = str.replace('Instagram','Facebook')
+    str = str.replace('Hp ','Hewlett-Packard ')
+    str = str.replace('Ups','United Parcel Service')
+    str = str.replace('Mts','Mobile Telesystems Pjsc')
+    str = str.replace('Google','Alphabet')
+    str = str.replace('Goog','Alphabet')
+    str = str.replace('Asda','Walmart')
+    str = str.replace('Citibank','Citigroup')
+    str = str.replace('Grubhub','Just Eat Takeawaycom')
+    str = re.sub(r'\b\w{1}\b', '', str)
     
+    #step 5: strip and spaces normalization
+    for word in last_words:
+        str = str.rstrip(word)
+    for word in bounder_words: 
+        str = str.strip(word)
+    if(len(str)>4):
+        str = re.sub("\d+", "", str)
+    str = str.strip(" ")
+    for char in special_chars:
+        str = str.strip(char)
+    str = str.strip("-")
     return str
 
-df_orgs = pd.read_csv('bert_res_companies200.csv',index_col=False,header=0)
+df_orgs = pd.read_csv('bert_res_companies.csv',index_col=False,header=0)
 names = df_orgs['Name']
 
 org_indicies = []

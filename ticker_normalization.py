@@ -1,15 +1,14 @@
 import pandas as pd
 import re
-#country_names = {' USA',' Australia',' China',' Spain'} #worth it or not?
-stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," Plc"," Sab "," NV",' Group',' Holdings'} #TEMP
-#special_words = {' Group',' Holdings'}
+country_names = {' USA'}#,' Australia',' China',' Spain'
+stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," plc"," Sab "," NV",' Group',' Holdings',' Floating',' Repersenting',' ADR'} #TEMP
 
 def ticker_is_primary(str):
     if (str.find(' due') == -1 and str.find(' Due') == -1 and len(str) < 80 and str.find(' Warrant') == -1 and str.find(' warrant') == -1 and str.find(' Right') == -1 and str.find('%') == -1):
         return True
     else:
         return False
-special_chars ={'.',',','(',')',':','*','/',"'","&","?"}
+special_chars ={'. ',',','(',')',':','*','/',"'","&","?"}
 
 def string_normalize(str):
     
@@ -21,40 +20,44 @@ def string_normalize(str):
     for char in special_chars:
         str = str.replace(char,'')
     #step 2: case normalization
+    #if(str.islower()):
     str = str.title()
-
     #step 3: country name removal
-    #for name in country_names:
-    #    str = str.replace(name,'')
+    for name in country_names:
+        str = str.replace(name,'')
+
     str = str.replace('Corporation','Corp')
     str = str.replace(' Of ',' ')
-    #step xx: remove words that useless for matching
+    #step 4: remove words that do not needed for matching
     for word in stop_words:
         str = str.partition(word)[0]
-    #for word in special_words:
-    #    str = str.partition(word)[0] + str.partition(word)[1]
-    
+
+    #step 5: exceptions and strip
     if(str.find("Co") == len(str) - len("Co")):
         str = str[:-len("Co")]
-    if(len(str) > 2 and str.find("And") == len(str) - len("And")):
-        str = str[:-len("And")]
+    if(len(str) > 3 and str.find(" and") == len(str) - len(" And")):
+        str = str[:-len(" And")]
     str = str.replace("Hp","Hewlett-Packard")
     #str = str.replace('Kkr','Kohlberg Kravis Roberts')
     str = str.replace('United States','US')
-    str = str.replace('Us','US')
     str = str.replace('The ','')
     str = str.replace('  ',' ')
-    if(str[-1]==' '):
-        str = str[0:len(str)-1]
-    return str
+    return str.strip()
 
-df_tickers = pd.read_csv('company-tickers.csv',index_col=False,header=0)
-names = df_tickers['Name']
-tickers = df_tickers['Symbol'] 
-df_tickers = df_tickers[df_tickers.Symbol.str.find('^')==-1]
+df_tickers1 = pd.read_csv('nasdaq_tickers.csv',index_col=False,header=0)
+names = df_tickers1['Name']
+tickers = df_tickers1['Symbol'] 
+df_tickers = df_tickers1[df_tickers1.Symbol.str.find('^')==-1]
+df_tickers = df_tickers[['Symbol','Name','Industry']]
+
+df_experiment = df_tickers1[['Industry']]
+print(df_experiment.head(50))
+
+
 df_tickers = df_tickers[df_tickers.Symbol.str.len() < 5]
 ticker_indicies = []
 
+df_copy = df_tickers.copy()
 for index,row in df_tickers.iterrows():
     item = row['Name']
     if(ticker_is_primary(item)):
@@ -62,6 +65,11 @@ for index,row in df_tickers.iterrows():
         company_name = string_normalize(item)
         df_tickers.at[index,'Name'] = company_name
 df_tickers = df_tickers[df_tickers.index.isin(ticker_indicies)]
+print(df_copy.head())
+df_copy = df_copy[df_copy.index.isin(ticker_indicies)]
+print(df_copy.head())
+df_copy = df_copy[['Name']]
+df_copy['New cropped name'] = df_tickers['Name']
 
-    
-df_tickers.to_csv("fix normalized tickers holdings.csv",index=False)
+df_copy.to_csv("tickers normalization test.csv",index=False)
+df_tickers.to_csv("fix normalized tickers holdings with industry.csv",index=False)

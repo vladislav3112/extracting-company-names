@@ -1,35 +1,27 @@
-from os import write
+import pandas as pd
 import spacy
 import spacy.cli
-import csv
 import numpy as np
 
-headline_list = []
+SUPPOSED_PEAK = 2400
+df_news = pd.read_csv('labeled_news.csv',index_col=False)
 news_list = []
+for elem in df_news['News']:
+    if(len(elem) < SUPPOSED_PEAK):
+        news_list.append(elem)
 
-with open('100k_news.csv', 'r',encoding='utf-8') as f:
-    reader = csv.reader(f)
-    for row in reader:
-        handled_row = ''.join(row).split('\t')
-        if(len(handled_row) > 5):    
-            headline_list.append(handled_row[4])
-            article = handled_row[6].replace("\'s","s")
-            news_list.append(article)
-        else:
-            print(handled_row)
+#  slice first X articles or wait too long
 
-#  slice first 10000 articles
-news_list = news_list[:10000]
-companies_found = set()
+#building model
+all_companies = []
 
 model_sp = spacy.load('en_core_web_lg')
 for list in news_list:
+    companies_found = ''
     for ent in model_sp(list).ents:
         if (ent.label_=='ORG'):
-            companies_found.add(ent.text.strip())
+            companies_found += ent.text.strip() + '\t'
+    all_companies.append(companies_found[:-1])
 
-with open('finance companies.txt','a',encoding='utf-8') as orgs_txt:
-    for company in companies_found:
-        ss = ')'
-        #orgs_txt.write('\n')
-        #orgs_txt.write(company)
+res_df = pd.DataFrame(data=all_companies,columns=['Name'])
+res_df.to_csv("spacy_res_companies_full.csv",index=False)
