@@ -8,7 +8,7 @@ def ticker_is_primary(str):
         return True
     else:
         return False
-special_chars ={'. ',',','(',')',':','*','/',"'","&","?"}
+special_chars ={'.',',','(',')',':','*','/',"'","&","?"}
 
 def string_normalize(input_str):
     
@@ -22,35 +22,36 @@ def string_normalize(input_str):
         str = str.replace(char,'')
     #step 2: case normalization
     tmp = str.split()
+    print(str)
     for word in tmp:
         if(word.islower()):
             word = word.title()
     str = ' '.join(tmp)
+    print(str)
     #step 3: country name removal
     for name in country_names:
         str = str.replace(name,'')
 
     str = str.replace('Corporation','Corp')
-    str = str.replace(' Of ',' ')
     #step 4: remove words that do not needed for matching
     for word in stop_words:
         str = str.partition(word)[0]
-
+    
     #step 5: exceptions and strip
     if(str.find("Co") == len(str) - len("Co")):
         str = str[:-len("Co")]
     if(len(str) > 3 and str.find(" And") == len(str) - len(" And")):
         str = str[:-len(" And")]
-    str = str.replace("Hp","Hewlett-Packard")
+    str = str.replace("HP","Hewlett-Packard")
     #str = str.replace('Kkr','Kohlberg Kravis Roberts')
     str = str.replace('United States','US')
     str = str.replace('The ','')
     str = str.replace('  ',' ')
     str = str.strip()
-    if(str.isupper() or len(str) < 4):
-        str = str + ' ' + input_str.split()[1]
+    #if(str.isupper() or len(str) < 4):
+    #    str = str + ' ' + input_str.split()[1]
 
-    return str.replace(".","")
+    return str
 
 df_tickers1 = pd.read_csv('nasdaq_tickers.csv',index_col=False,header=0)
 names = df_tickers1['Name']
@@ -80,4 +81,4 @@ df_copy = df_copy[['Name']]
 df_copy['New cropped name'] = df_tickers['Name']
 
 df_copy.to_csv("tickers normalization test.csv",index=False)
-df_tickers.to_csv("fix normalized tickers holdings with industry.csv",index=False)
+df_tickers.to_csv("new fix normalized tickers holdings with industry.csv",index=False)

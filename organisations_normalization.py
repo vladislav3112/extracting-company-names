@@ -3,15 +3,15 @@ import csv
 import pandas as pd
 import numpy as np
 import re
-country_names = {' USA',' U S',' Australia',' China',' Spain'}
-bounder_words = {'And','Of','and','of','Shares',"-"," "}
-last_words = {'Co'}
-stop_words = {' Company',' Corp',' Inc',' Ltd','.Com', ' Incorporated',' Holdings',' Co ',' Securities',' Asset',' Plc',' Group'}#' Incorporated', ' Group',' Holdings' - risky option
+country_names = {' USA'}
+stop_words = {' Company',' Corp',' Inc.',' Ltd','.Com', ' Incorporated',' Holdings',' Co ',' Securities',' Asset',' Plc',' Group'}#' Incorporated', ' Group',' Holdings' - risky option
+last_words = {'Co', 'And','Of', 'Inc'}
+first_words = ['And ','Of ','and ','Shares ','of ',"-"," "]
+special_chars = ['.',',','(',')',':','*','/',"'",'"', '&','?',"=","_",'$']
 
-special_chars ={'.',',','(',')',':','*','/',"'",'"', '&','?'}
-
-def string_normalize(str):
+def string_normalize(input_str):
     
+    str = input_str
     #step 0: remove 's and spaces removal
     str = ''.join(re.sub(' +', ' ', str))
     str = str.replace("'s",'')
@@ -19,62 +19,69 @@ def string_normalize(str):
     #step 1: legal ang special charachter removal:
     str = ''.join(re.sub(r'\([^)]*\)', '', str))
     #step 2: case normalization
+    
     if(str.islower()):
         str = str.title()
     
     for char in special_chars:
         str = str.replace(' '+char+' ',char)
         str = str.replace(' '+char,char)
-
+    
     for word in stop_words:
         str = str.partition(word)[0]
-        
-    
-
+    #print("0:",str)
+    for word in last_words:   #new!
+        if(len(str) > len(word) and str.find(word)==len(str) - len(word)):
+            str = str[:-len(word)]
+    #print("01:",str)
+    for word in first_words:   #new!
+        if(str.find(word)==0):
+            str = str[len(word):]
+    #print("02:",str)
+    str = str.replace('U. S.','US')
     str = str.replace('J&J','JohnsonJohnson')
     
     for char in special_chars:
         str = str.replace(char,'')
+    
     #step 3: country name removal
     for name in country_names:
         str = str.replace(name,'')
     str = str.replace('Corporation','Corp')
     str = str.replace('Cos','Companies')
-    str = str.replace(' Of ',' ')
     str = str.replace('The ','')
-    str = str.replace(' U S','US')
-    #step 4: special cases
     
+    #step 4: special cases
+    #all subsiaries
     str = str.replace('United States','US')
+    str = str.replace('JPMorgan','JP Morgan')
+    str = str.replace('Us','US')
+    str = str.replace('S. Steel','US Steel')
     str = str.replace('Jnj','JohnsonJohnson')
     str = str.replace('Jj','JohnsonJohnson')
-    str = str.replace('Ibm','International Business Machines')
+    str = str.replace('IBM','International Business Machines')
     str = str.replace('Instagram','Facebook')
-    str = str.replace('Hp ','Hewlett-Packard ')
-    str = str.replace('Ups','United Parcel Service')
-    str = str.replace('Mts','Mobile Telesystems Pjsc')
+    str = str.replace('HP ','Hewlett-Packard ')
+    str = str.replace('UPS','United Parcel Service')
+    str = str.replace('MTS','Mobile TeleSystems PJSC')
     str = str.replace('Google','Alphabet')
     str = str.replace('Goog','Alphabet')
-    str = str.replace('Asda','Walmart')
+    str = str.replace('ASDA','Walmart')
     str = str.replace('Citibank','Citigroup')
-    str = str.replace('Grubhub','Just Eat Takeawaycom')
+    str = str.replace('GrubHub','Just Eat Takeawaycom')
     str = re.sub(r'\b\w{1}\b', '', str)
     
-    #step 5: strip and spaces normalization
-    for word in last_words:   
-        if(len(str) > len(word) and str.find(word)==len(str) - len(word)):
-            str = str[:-len(word)]
-    for word in bounder_words:   
-        if(str.find(word)==0 or (len(str) > len(word) and str.find(word)==len(str) - len(word))):
-            str = str[len(word)+1:]
-    for word in bounder_words: 
-        str = str.removesuffix(word)
-    if(len(str)>4):
-        str = re.sub("\d+", "", str)
-    str = str.strip()
+    tmp = [elem for elem in str.split(' ') if len(elem) > 1]
+    #print("1:",input_str)
+    str = ' '.join(tmp)
+    
+    
+    str = str.strip(" ")
     for char in special_chars:
         str = str.strip(char)
     str = str.strip("-")
+    #print("2:",str)
+    #print("\n")
     return str
 
 df_orgs = pd.read_csv('bert_res_companies.csv',index_col=False,header=0)
