@@ -61,13 +61,17 @@ def string_normalize(str):
     str = re.sub(r'\b\w{1}\b', '', str)
     
     #step 5: strip and spaces normalization
-    for word in last_words:
-        str = str.rstrip(word)
+    for word in last_words:   
+        if(len(str) > len(word) and str.find(word)==len(str) - len(word)):
+            str = str[:-len(word)]
+    for word in bounder_words:   
+        if(str.find(word)==0 or (len(str) > len(word) and str.find(word)==len(str) - len(word))):
+            str = str[len(word)+1:]
     for word in bounder_words: 
-        str = str.strip(word)
+        str = str.removesuffix(word)
     if(len(str)>4):
         str = re.sub("\d+", "", str)
-    str = str.strip(" ")
+    str = str.strip()
     for char in special_chars:
         str = str.strip(char)
     str = str.strip("-")

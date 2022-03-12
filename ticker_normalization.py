@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 country_names = {' USA'}#,' Australia',' China',' Spain'
-stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," plc"," Sab "," NV",' Group',' Holdings',' Floating',' Repersenting',' ADR'} #TEMP
+stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," plc"," Sab "," NV",' Group',' Holdings',' Floating',' Repersenting',' ADR','PLC'} #TEMP
 
 def ticker_is_primary(str):
     if (str.find(' due') == -1 and str.find(' Due') == -1 and len(str) < 80 and str.find(' Warrant') == -1 and str.find(' warrant') == -1 and str.find(' Right') == -1 and str.find('%') == -1):
@@ -10,8 +10,9 @@ def ticker_is_primary(str):
         return False
 special_chars ={'. ',',','(',')',':','*','/',"'","&","?"}
 
-def string_normalize(str):
+def string_normalize(input_str):
     
+    str = input_str
     #step 0: remove 's
     str = str.replace("'s",'')
 
@@ -20,8 +21,11 @@ def string_normalize(str):
     for char in special_chars:
         str = str.replace(char,'')
     #step 2: case normalization
-    #if(str.islower()):
-    str = str.title()
+    tmp = str.split()
+    for word in tmp:
+        if(word.islower()):
+            word = word.title()
+    str = ' '.join(tmp)
     #step 3: country name removal
     for name in country_names:
         str = str.replace(name,'')
@@ -35,14 +39,18 @@ def string_normalize(str):
     #step 5: exceptions and strip
     if(str.find("Co") == len(str) - len("Co")):
         str = str[:-len("Co")]
-    if(len(str) > 3 and str.find(" and") == len(str) - len(" And")):
+    if(len(str) > 3 and str.find(" And") == len(str) - len(" And")):
         str = str[:-len(" And")]
     str = str.replace("Hp","Hewlett-Packard")
     #str = str.replace('Kkr','Kohlberg Kravis Roberts')
     str = str.replace('United States','US')
     str = str.replace('The ','')
     str = str.replace('  ',' ')
-    return str.strip()
+    str = str.strip()
+    if(str.isupper() or len(str) < 4):
+        str = str + ' ' + input_str.split()[1]
+
+    return str.replace(".","")
 
 df_tickers1 = pd.read_csv('nasdaq_tickers.csv',index_col=False,header=0)
 names = df_tickers1['Name']
