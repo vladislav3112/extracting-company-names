@@ -1,7 +1,8 @@
 import pandas as pd
 import re
 country_names = {' USA'}#,' Australia',' China',' Spain'
-stop_words = {' Class', ' Series', ' Depositary', ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," plc"," Sab "," NV",' Group',' Holdings',' Floating',' Repersenting',' ADR','PLC'} #TEMP
+stop_words = [' Class', ' Series', ' Depositary',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," plc"," Sab "," NV",' Holdings',' Floating',' Repersenting',' ADR','PLC']
+meaningful_words = [' and Company'] 
 
 def ticker_is_primary(str):
     if (str.find(' due') == -1 and str.find(' Due') == -1 and len(str) < 80 and str.find(' Warrant') == -1 and str.find(' warrant') == -1 and str.find(' Right') == -1 and str.find('%') == -1):
@@ -22,12 +23,10 @@ def string_normalize(input_str):
         str = str.replace(char,'')
     #step 2: case normalization
     tmp = str.split()
-    print(str)
     for word in tmp:
         if(word.islower()):
             word = word.title()
     str = ' '.join(tmp)
-    print(str)
     #step 3: country name removal
     for name in country_names:
         str = str.replace(name,'')
@@ -40,8 +39,8 @@ def string_normalize(input_str):
     #step 5: exceptions and strip
     if(str.find("Co") == len(str) - len("Co")):
         str = str[:-len("Co")]
-    if(len(str) > 3 and str.find(" And") == len(str) - len(" And")):
-        str = str[:-len(" And")]
+    if(len(str) > 3 and str.find(" and") == len(str) - len(" and")):
+        str = str[:-len(" and")]
     str = str.replace("HP","Hewlett-Packard")
     #str = str.replace('Kkr','Kohlberg Kravis Roberts')
     str = str.replace('United States','US')
@@ -50,7 +49,6 @@ def string_normalize(input_str):
     str = str.strip()
     #if(str.isupper() or len(str) < 4):
     #    str = str + ' ' + input_str.split()[1]
-
     return str
 
 df_tickers1 = pd.read_csv('nasdaq_tickers.csv',index_col=False,header=0)

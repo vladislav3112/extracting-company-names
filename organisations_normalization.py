@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import re
 country_names = {' USA'}
-stop_words = {' Company',' Corp',' Inc.',' Ltd','.Com', ' Incorporated',' Holdings',' Co ',' Securities',' Asset',' Plc',' Group'}#' Incorporated', ' Group',' Holdings' - risky option
+stop_words = {' Company',' Corp',' Inc.',' Ltd','.Com', 'Shares', ' Incorporated',' Holdings',' Co ',' Securities',' Asset',' Plc'}#' Incorporated', ' Holdings' - risky option
 last_words = {'Co', 'And','Of', 'Inc'}
 first_words = ['And ','Of ','and ','Shares ','of ',"-"," "]
 special_chars = ['.',',','(',')',':','*','/',"'",'"', '&','?',"=","_",'$']
@@ -84,7 +84,7 @@ def string_normalize(input_str):
     #print("\n")
     return str
 
-df_orgs = pd.read_csv('bert_res_companies.csv',index_col=False,header=0)
+df_orgs = pd.read_csv('bert_res_companies200.csv',index_col=False,header=0)
 names = df_orgs['Name']
 
 org_indicies = []
