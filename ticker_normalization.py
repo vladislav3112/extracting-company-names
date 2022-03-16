@@ -1,15 +1,17 @@
 import pandas as pd
 import re
 country_names = {' USA'}#,' Australia',' China',' Spain'
-stop_words = [' Class', ' Series', ' Depositary',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," plc"," Sab "," NV",' Holdings',' Floating',' Repersenting',' ADR','PLC']
-meaningful_words = [' and Company'] 
+stop_words = [' Class', ' Series', ' Depositary',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Co ',' Company',' Corp',' Inc',' Ltd',' Incorporated',' SA '," plc"," SAB "," NV",' Holdings',' Floating',' Repersenting',' ADR','PLC']
 
 def ticker_is_primary(str):
     if (str.find(' due') == -1 and str.find(' Due') == -1 and len(str) < 80 and str.find(' Warrant') == -1 and str.find(' warrant') == -1 and str.find(' Right') == -1 and str.find('%') == -1):
         return True
     else:
         return False
-special_chars ={'.',',','(',')',':','*','/',"'","&","?"}
+special_chars =['.',',','(',')',':','*','/',"'","?","!"]
+important_chars = special_chars.copy()
+important_chars.append("-")
+important_chars.append("&")
 
 def string_normalize(input_str):
     
@@ -42,13 +44,12 @@ def string_normalize(input_str):
     if(len(str) > 3 and str.find(" and") == len(str) - len(" and")):
         str = str[:-len(" and")]
     str = str.replace("HP","Hewlett-Packard")
-    #str = str.replace('Kkr','Kohlberg Kravis Roberts')
     str = str.replace('United States','US')
     str = str.replace('The ','')
     str = str.replace('  ',' ')
     str = str.strip()
-    #if(str.isupper() or len(str) < 4):
-    #    str = str + ' ' + input_str.split()[1]
+    for char in important_chars:
+        str = str.strip(char)
     return str
 
 df_tickers1 = pd.read_csv('nasdaq_tickers.csv',index_col=False,header=0)
@@ -79,4 +80,4 @@ df_copy = df_copy[['Name']]
 df_copy['New cropped name'] = df_tickers['Name']
 
 df_copy.to_csv("tickers normalization test.csv",index=False)
-df_tickers.to_csv("new fix normalized tickers holdings with industry.csv",index=False)
+df_tickers.to_csv("new handling normalized tickers holdings with industry.csv",index=False)

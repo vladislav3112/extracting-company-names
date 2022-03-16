@@ -7,7 +7,7 @@ country_names = {' USA'}
 stop_words = {' Company',' Corp',' Inc.',' Ltd','.Com', 'Shares', ' Incorporated',' Holdings',' Co ',' Securities',' Asset',' Plc'}#' Incorporated', ' Holdings' - risky option
 last_words = {'Co', 'And','Of', 'Inc'}
 first_words = ['And ','Of ','and ','Shares ','of ',"-"," "]
-special_chars = ['.',',','(',')',':','*','/',"'",'"', '&','?',"=","_",'$']
+special_chars = ['.',',','(',')',':','*','/',"'",'"','?',"=","_",'$']
 
 def string_normalize(input_str):
     
@@ -27,6 +27,11 @@ def string_normalize(input_str):
         str = str.replace(' '+char+' ',char)
         str = str.replace(' '+char,char)
     
+    tmp = str.split()
+    for word in tmp:
+        if(word.islower()):
+            word = word.title()
+
     for word in stop_words:
         str = str.partition(word)[0]
     #print("0:",str)
