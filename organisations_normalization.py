@@ -1,5 +1,3 @@
-from os import write
-import csv
 import pandas as pd
 import numpy as np
 import re
@@ -7,7 +5,10 @@ country_names = {' USA'}
 stop_words = {' Company',' Corp',' Inc.',' Ltd','.Com', 'Shares', ' Incorporated',' Holdings',' Co ',' Securities',' Asset',' Plc'}#' Incorporated', ' Holdings' - risky option
 last_words = {'Co', 'And','Of', 'Inc'}
 first_words = ['And ','Of ','and ','Shares ','of ',"-"," "]
-special_chars = ['.',',','(',')',':','*','/',"'",'"','?',"=","_",'$']
+special_chars = ['!','.',',','(',')',':','*','/',"'",'"','?',"=","_",'$']
+important_chars = special_chars.copy()  #new chars in list should not be removed 
+important_chars.append("-")
+important_chars.append("&")
 
 def string_normalize(input_str):
     
@@ -34,15 +35,15 @@ def string_normalize(input_str):
 
     for word in stop_words:
         str = str.partition(word)[0]
-    #print("0:",str)
-    for word in last_words:   #new!
+
+    for word in last_words:  
         if(len(str) > len(word) and str.find(word)==len(str) - len(word)):
             str = str[:-len(word)]
-    #print("01:",str)
-    for word in first_words:   #new!
+
+    for word in first_words:   
         if(str.find(word)==0):
             str = str[len(word):]
-    #print("02:",str)
+
     str = str.replace('U. S.','US')
     str = str.replace('J&J','JohnsonJohnson')
     
@@ -61,32 +62,29 @@ def string_normalize(input_str):
     str = str.replace('United States','US')
     str = str.replace('JPMorgan','JP Morgan')
     str = str.replace('Us','US')
-    str = str.replace('S. Steel','US Steel')
-    str = str.replace('Jnj','JohnsonJohnson')
-    str = str.replace('Jj','JohnsonJohnson')
+    str = str.replace('Air Products&Chemicals','Air Products and Chemicals')
+    str = str.replace('J&J','Johnson & Johnson')
     str = str.replace('IBM','International Business Machines')
     str = str.replace('Instagram','Facebook')
-    str = str.replace('HP ','Hewlett-Packard ')
     str = str.replace('UPS','United Parcel Service')
     str = str.replace('MTS','Mobile TeleSystems PJSC')
     str = str.replace('Google','Alphabet')
-    str = str.replace('Goog','Alphabet')
+    str = str.replace('BNY Mellon','Bank of New York Mellon')
     str = str.replace('ASDA','Walmart')
+    str = str.replace('Asda','Walmart')
     str = str.replace('Citibank','Citigroup')
     str = str.replace('GrubHub','Just Eat Takeawaycom')
-    str = re.sub(r'\b\w{1}\b', '', str)
     
-    tmp = [elem for elem in str.split(' ') if len(elem) > 1]
-    #print("1:",input_str)
+    tmp = [elem for elem in str.split(' ') if len(elem) > 1 or elem =="&"]
+
     str = ' '.join(tmp)
     
-    
     str = str.strip(" ")
-    for char in special_chars:
+    for char in important_chars:
         str = str.strip(char)
-    str = str.strip("-")
-    #print("2:",str)
-    #print("\n")
+
+    if(str == "HP"):
+       str = 'Hewlett-Packard'
     return str
 
 df_orgs = pd.read_csv('bert_res_companies200.csv',index_col=False,header=0)

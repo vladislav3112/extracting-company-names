@@ -1,5 +1,6 @@
 import nltk
 import pandas as pd
+import gensim
 from nltk.corpus import stopwords  #stopwords
 from nltk.stem import WordNetLemmatizer  
 from nltk.tokenize import word_tokenize
@@ -24,18 +25,29 @@ df_news['cleaned_text'] = df_news['News'].apply(clean_text)
 vect =TfidfVectorizer(stop_words=stop_words,max_features=1000)
 vect_text=vect.fit_transform(df_news['cleaned_text'])
 
-from sklearn.decomposition import LatentDirichletAllocation
-lda_model=LatentDirichletAllocation(n_components=10,
-learning_method='online',random_state=42,max_iter=1) 
-lda_top=lda_model.fit_transform(vect_text)
-print("Document 0: ")
-for i,topic in enumerate(lda_top[0]):
-  print("Topic ",i,": ",topic*100,"%")
 
-vocab = vect.get_feature_names()
-for i, comp in enumerate(lda_model.components_):
-     vocab_comp = zip(vocab, comp)
-     sorted_words = sorted(vocab_comp, key= lambda x:x[1], reverse=True)[:10]
-     print("Topic "+str(i)+": ")
-     for t in sorted_words:
-            print(t[0],end=" ")
+
+lda_model_tfidf = gensim.models.LdaMulticore(corpus_tfidf, num_topics=10, id2word=dictionary, passes=2, workers=4)
+
+for idx, topic in lda_model_tfidf.print_topics(-1):
+    print('Topic: {} Word: {}'.format(idx, topic))
+
+
+
+# from sklearn.decomposition import LatentDirichletAllocation
+# lda_model=LatentDirichletAllocation(n_components=10,
+# random_state=42,max_iter=1) 
+# lda_top=lda_model.fit_transform(vect_text)
+# print("Document 0: ")
+# for i,topic in enumerate(lda_top[0]):
+#   print("Topic ",i,": ",topic*100,"%")
+# df_topics = pd.DataFrame(data = lda_top)
+# df_topics.to_csv("topics.csv")
+
+# vocab = vect.get_feature_names()
+# for i, comp in enumerate(lda_model.components_):
+#      vocab_comp = zip(vocab, comp)
+#      sorted_words = sorted(vocab_comp, key= lambda x:x[1], reverse=True)[:10]
+#      print("Topic "+str(i)+": ")
+#      for t in sorted_words:
+#             print(t[0],end=" ")
