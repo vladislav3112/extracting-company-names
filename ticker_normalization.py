@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 country_names = {' USA'}#,' Australia',' China',' Spain'
-stop_words = [' Class', ' Series', ' Depositary',' Limited',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Incorporated',' SA '," plc"," SAB "," NV",' Floating',' Repersenting',' ADR','PLC',' Co ',' Company',' Corp',' Holdings',' Inc',' Ltd']
+stop_words = [' Class', ' Series', ' LLC', ' Depositary',' Limited',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Incorporated'," plc"," SAB "," NV",' Floating',' Repersenting',' ADR','PLC',' Co ',' Company',' Corp',' Holdings',' Inc',' Ltd',]
 company_legal_words = ['PLC',' Limited',' Co ',' Company',' Corp',' Holdings',' Inc',' Ltd']
 
 def ticker_is_primary(str):
@@ -40,20 +40,24 @@ def string_normalize(input_str):
     #step 4: remove words that do not needed for matching
     for word in stop_words:
         str = str.partition(word)[0]
-
+    str = str.partition(" Group")[0] + str.partition(" Group")[1]
     for word in company_legal_words: # if we lost coompany legal word it should be in full name
         if(tmp.find(word) != -1 and str.find(word) == -1):
             long_str = str + ' ' + word.lstrip(" ")
             break
         
     #step 5: exceptions and strip
-    if(str.find("Co") == len(str) - len("Co")):
+    if(str.find("Co") == len(str) - len("Co")): #remove only if occur at the end of string
         str = str[:-len("Co")]
+    if(str.find("SA") == len(str) - len("SA")):
+        str = str[:-len("SA")]
+
     if(len(str) > 3 and str.find(" and") == len(str) - len(" and")):
         str = str[:-len(" and")]
     str = str.replace("HP","Hewlett-Packard")
     str = str.replace('United States','US')
     str = str.replace('The ','')
+    str = str.replace('DBA ','')
     str = str.replace('  ',' ')
     str = str.strip()
     for char in important_chars:

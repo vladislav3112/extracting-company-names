@@ -20,10 +20,10 @@ nasdaq_df.to_csv("company-tickers.csv",index=False)
 
 # 1:
 
-a = 'Coca-Cola Femsa Sa'# 0.67 res ! different companies
-b = 'Coca-Cola'
+a = 'Bank of China'# 0.67 res ! different companies
+b = 'Bank of America'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
-print("coke")
+print("bank")
 print(seq.ratio())
 
 a = 'Apple Inc.'# 0.84 res
