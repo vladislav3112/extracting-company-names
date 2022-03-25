@@ -28,10 +28,13 @@ def string_normalize(input_str):
         str = str.replace(' '+char+' ',char)
         str = str.replace(' '+char,char)
     
-    tmp = str.split()
-    for word in tmp:
+    old_tmp = str.split()
+    tmp = []
+    for word in old_tmp:
         if(word.islower()):
             word = word.title()
+        tmp.append(word)
+    str = ' '.join(tmp)
 
     for word in stop_words:
         str = str.partition(word)[0]

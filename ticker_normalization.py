@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 country_names = {' USA'}#,' Australia',' China',' Spain'
-stop_words = [' Class', ' Series', ' LLC', ' Depositary',' Limited',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units', ' Unit',' Incorporated'," plc"," SAB "," NV",' Floating',' Repersenting',' ADR','PLC',' Co ',' Company',' Corp',' Holdings',' Inc',' Ltd',]
+stop_words = [' Class', ' Series', ' LLC',' LP',' Depositary',' Limited',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units',' Incorporated'," Plc"," SAB "," NV",' Floating',' Repersenting',' ADR',' Company',' Corp',' Holdings',' Inc',' Ltd', ' SA ']
 company_legal_words = ['PLC',' Limited',' Co ',' Company',' Corp',' Holdings',' Inc',' Ltd']
 
 def ticker_is_primary(str):
@@ -26,10 +26,12 @@ def string_normalize(input_str):
     for char in special_chars:
         str = str.replace(char,'')
     #step 2: case normalization
-    tmp = str.split()
-    for word in tmp:
+    old_tmp = str.split()
+    tmp = []
+    for word in old_tmp:
         if(word.islower()):
             word = word.title()
+        tmp.append(word)
     str = ' '.join(tmp)
     #step 3: country name removal
     for name in country_names:
@@ -52,8 +54,8 @@ def string_normalize(input_str):
     if(str.find("SA") == len(str) - len("SA")):
         str = str[:-len("SA")]
 
-    if(len(str) > 3 and str.find(" and") == len(str) - len(" and")):
-        str = str[:-len(" and")]
+    if(len(str) > 3 and str.find(" And") == len(str) - len(" And")):
+        str = str[:-len(" And")]
     str = str.replace("HP","Hewlett-Packard")
     str = str.replace('United States','US')
     str = str.replace('The ','')
@@ -62,10 +64,14 @@ def string_normalize(input_str):
     str = str.strip()
     for char in important_chars:
         str = str.strip(char)
-    
+    str = str.strip()
+    long_str = long_str.replace(" Co Co"," Co").rstrip(" ")
+    if len(str) < 4 and long_str: #use long name only for companies that name 1 word
+        str = long_str
     if (not long_str):
         long_str = str
     return [str,long_str]
+
 
 df_tickers1 = pd.read_csv('nasdaq_tickers.csv',index_col=False,header=0)
 df_tickers1["Long name"] = ""
@@ -97,4 +103,4 @@ df_copy = df_copy[['Name']]
 df_copy['New cropped name'] = df_tickers['Name']
 
 df_copy.to_csv("tickers normalization test.csv",index=False)
-df_tickers.to_csv("new handling normalized tickers holdings with industry.csv",index=False)
+df_tickers.to_csv("ls new handling normalized tickers holdings with industry.csv",index=False)
