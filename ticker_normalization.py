@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 country_names = {' USA'}#,' Australia',' China',' Spain'
-stop_words = [' Class', ' Series', ' LLC',' LP',' Depositary',' Limited',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units',' Incorporated'," Plc"," SAB "," NV",' Floating',' Repersenting',' ADR',' Company',' Corp',' Holdings',' Inc',' Ltd', ' SA ']
+stop_words = [' Class', ' Series', ' LLC',' LP',' Depositary',' Limited',' Preffered'," Shares", ' Common', ' Ordinary Share',' Common Stock',' Warrant', ' Trust',' Warrants',' Units',' Incorporated'," Plc"," SAB "," NV",' Floating',' Repersenting',' ADR',' Company',' Corp',' Holdings',' Inc',' Ltd', ' SA ', " LTD"]
 company_legal_words = ['PLC',' Limited',' Co ',' Company',' Corp',' Holdings',' Inc',' Ltd']
 
 def ticker_is_primary(str):
@@ -15,7 +15,8 @@ important_chars.append("-")
 important_chars.append("&")
 
 def string_normalize(input_str):
-    
+    if(input_str.find("Lazard LTD")!=-1):
+        print("why?")
     long_str = ""
     str = input_str
     #step 0: remove 's
@@ -66,7 +67,7 @@ def string_normalize(input_str):
         str = str.strip(char)
     str = str.strip()
     long_str = long_str.replace(" Co Co"," Co").rstrip(" ")
-    if len(str) < 4 and long_str: #use long name only for companies that name 1 word
+    if str.find(" ")==-1 and long_str and str.istitle(): #use long name only for companies that name 1 word
         str = long_str
     if (not long_str):
         long_str = str
