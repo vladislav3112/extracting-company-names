@@ -67,7 +67,7 @@ def string_normalize(input_str):
         str = str.strip(char)
     str = str.strip()
     long_str = long_str.replace(" Co Co"," Co").rstrip(" ")
-    if str.find(" ")==-1 and long_str and str.istitle(): #use long name only for companies that name 1 word
+    if len(str) < 4 and long_str and str.istitle(): #use long name only for companies that name 1 word and very short
         str = long_str
     if (not long_str):
         long_str = str
