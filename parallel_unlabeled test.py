@@ -44,7 +44,7 @@ commonly_used_words = ["of","america","american","taiwan","banco","mexico","chin
                        "general","resourses","electric","payments","home","world","union","credit","business","public","shipping","capital","express","royal","mobile","microelectronics",
                        "first","exchange","block","united","energy","national","realty","york","titan","community","skin","food","industrial","iron","paper","crown","petroleum","jewelers",
                        "federal","times","network","communications","industries","park","stock","securities","street","canada",
-                       "inc","corp","ltd","time","yield","hill","canada"]
+                       "inc","corp","ltd","time","yield","hill","canada","group"]
 
 
 # In[7]:
@@ -139,7 +139,6 @@ def is_both_unique(real_words, extracted_words):#check if organisation name cont
 
 
 def is_extracted_contain_real(words, extracted_words):#check if organisation name contains person name
-
     for word in words:
         if(word not in extracted_words):
             return False
@@ -263,31 +262,29 @@ def parallel_func(rank):
                 for curr_elem in ticker_companies:
                     curr_str = curr_elem.replace("-","").lower()
                     ticker_words = curr_elem.replace("-"," ").split(" ")#for walmart and other
-
                     metrix = difflib.SequenceMatcher(None,curr_str.replace(" ",""),extracted_str.replace(" ","")).ratio()
-                    if (metrix < 0.3 or extracted_elem == 'Not Avaliable'):
+                    if (metrix < 0.2 or extracted_elem == 'Not Avaliable'):
                         continue
-                    if (metrix == 1.0 or curr_str.replace(" ","").replace("group","") == extracted_str.replace(" ","") or curr_str.replace("&","and") == extracted_str or extracted_str.replace("&","and") == curr_str):
+                    if (metrix == 1.0 or curr_str.replace(" ","").replace("group","") == extracted_str.replace(" ","") or extracted_str.replace(" ","").replace("group","") == curr_str.replace(" ","") or curr_str.replace("&","and") == extracted_str or extracted_str.replace("&","and") == curr_str):
                         max_elem = curr_elem
                         #print("Should be in the answer: ",max_elem,extracted_elem)
                         max_metrix = 1.0
                         best_extracted = extracted_elem
                         #isEnd = True
                         break
-                    if (is_extracted_contain_real(ticker_words,extracted_words) and len(curr_elem) > 3 and len(ticker_words)>1):
+                    if (is_extracted_contain_real(ticker_words,extracted_words)) and len(curr_elem) > 3 and len(ticker_words)>1:
                         max_elem = curr_elem
                         best_extracted = extracted_elem
                         #print("OK, for sure? ",max_elem, best_extracted)
                         max_metrix = 1.0
                         #isEnd = True
                         break
-                    if (is_extracted_contain_real(ticker_words,extracted_words) and len(curr_elem) > 3):
+                    if (max_metrix < 0.95 and is_extracted_contain_real(ticker_words,extracted_words) or extracted_str.replace(" ","").find(curr_str.replace(" ",""))!=-1) and len(curr_elem) > 3:
                         max_elem = curr_elem
                         best_extracted = extracted_elem
                         #print("OK, for sure? ",max_elem, best_extracted)
-                        max_metrix = 0.9
+                        max_metrix = 0.95
                         #isEnd = True
-                        break
                     if(only_commonly_used_is_common(ticker_words,extracted_words)):
                         continue
                     if (metrix > 0.3 and len(extracted_str) > 2 and (len(curr_str) > 2) and (is_valid_match(ticker_words,extracted_words,curr_str,extracted_str) or 
@@ -314,7 +311,7 @@ def parallel_func(rank):
                         COMMENT = ""
                 #if (isEnd):
                 #    break
-                if (max_metrix > 0.90) or (max_metrix > 0.8  and len(curr_elem) > 2 and len(max_elem) > 2):
+                if (max_metrix > 0.90) or (max_metrix > 0.8  and len(best_extracted) > 2 and len(max_elem) > 2):
                     res_df.loc[company_idx] = [labeled_elem,max_elem,best_extracted,max_metrix,COMMENT,news[idx],extracted]
                     #print("Great! ",labeled_elem,"+", max_elem," best: ",best_extracted," :idx = ",idx)
                     #print("curr extracted elem: ",extracted_elem)
