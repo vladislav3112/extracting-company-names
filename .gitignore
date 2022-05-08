@@ -1,4 +1,5 @@
 articles/
 results/
 *.csv
+!datasets/nasdaq_news.csv
 *.txt
