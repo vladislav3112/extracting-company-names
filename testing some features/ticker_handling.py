@@ -49,7 +49,10 @@ print(distance("The New York Times Co","New York Times Company"))
 #if compute loss as dist/minlen -> 3rd is worsest!!!
 
 #3 bert usage
-
+a = 'Honda Motors'#0.79 res  !!!THE!!!
+b = 'Hyundai Motors'
+seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
+print(seq.ratio(),"OK ")
 from sentence_transformers import SentenceTransformer
 
 model = SentenceTransformer('bert-base-nli-mean-tokens')

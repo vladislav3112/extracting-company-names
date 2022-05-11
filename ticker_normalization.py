@@ -15,8 +15,6 @@ important_chars.append("-")
 important_chars.append("&")
 
 def string_normalize(input_str):
-    if(input_str.find("Lazard LTD")!=-1):
-        print("why?")
     long_str = ""
     str = input_str
     #step 0: remove 's
@@ -57,7 +55,8 @@ def string_normalize(input_str):
 
     if(len(str) > 3 and str.find(" And") == len(str) - len(" And")):
         str = str[:-len(" And")]
-    str = str.replace("HP","Hewlett-Packard")
+    if(str.split(" ")[0] == "HP"):
+       str = str.replace("HP","Hewlett-Packard")
     str = str.replace('United States','US')
     str = str.replace('The ','')
     str = str.replace('DBA ','')
