@@ -36,8 +36,8 @@ b = 'Boston'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
 print(seq.ratio(), " Ford")
 
-a = 'Bank Of America Merrill Lynch'#0.79 res  !!!THE!!!
-b = 'Bank Of America'
+a = 'Bank Of America'#0.79 res  !!!THE!!!
+b = 'Bank Of Ameirca'
 seq = difflib.SequenceMatcher(a=a.lower(), b=b.lower())
 print(seq.ratio()," America")
 #interesting, worth to check( apple and pineapple <0.65 score)
