@@ -11,13 +11,14 @@ import difflib
 import transformers
 import spacy
 from transformers import BertTokenizerFast
+import math
 
 
 # In[3]:
 
 
 df_labels = pd.read_csv("ls_new_nasdaq_labeled_companies_holdings.csv",index_col=False,header=0)
-df_all_extracted_companies = pd.read_csv("ls_new_all_companies_nasdaq_normalized1.csv",index_col=False,header=0)
+df_all_extracted_companies = pd.read_csv("ls_new_all_companies_nasdaq_normalized_flair(1).csv",index_col=False,header=0)
 df_news = pd.read_csv("nasdaq_news.csv",index_col=False,header=0)
 df_tickers = pd.read_csv("ls new handling normalized tickers holdings with industry.csv",index_col=False,header=0)
 
@@ -44,7 +45,7 @@ commonly_used_words = ["of","america","american","taiwan","banco","mexico","chin
                        "general","resourses","electric","payments","home","world","union","credit","business","public","shipping","capital","express","royal","mobile","microelectronics",
                        "first","exchange","block","united","energy","national","realty","york","titan","community","skin","food","industrial","iron","paper","crown","petroleum","jewelers",
                        "federal","times","network","communications","industries","park","stock","securities","street","canada",
-                       "inc","corp","ltd","time","yield","hill","canada","group"]
+                       "inc","corp","ltd","time","yield","hill","canada","group","advisours","equities","journal"]
 
 
 # In[7]:
@@ -222,15 +223,15 @@ labeled_companies = df_labels['Name']
 ticker_companies = df_tickers['Name']
 news = df_news['News']
 #ARTICLES_NUM = len(labeled_companies)
-ARTICLES_NUM = 100
+ARTICLES_NUM = 500
 
 extracted_companies = df_all_extracted_companies['Name']
 print(extracted_companies[0])
 contain_real_companies = 0
-
 #t1 = time.time()
 def parallel_func(rank):
     not_found_companies = []
+    total_extracted_companies = 0
     res_df = pd.DataFrame(columns=['Real company','Ticker company','Extracted company','Metrix','Comment','Article','Extracted'])
     company_idx = 0
     total = 0
@@ -242,8 +243,11 @@ def parallel_func(rank):
         end_value = ARTICLES_NUM
     print("Makes sence ",end_value)
     for idx in range(start_value,end_value):
+        if isinstance(extracted_companies[idx], float) and math.isnan(extracted_companies[idx]): #check if no companies found
+                    continue
         labeled = labeled_companies[idx].split('\t')
         extracted = set(extracted_companies[idx].split('\t'))#?set worked!
+        total_extracted_companies += len(extracted)
         total += len(labeled)
         print(idx)
         for labeled_elem in labeled:
@@ -263,6 +267,8 @@ def parallel_func(rank):
                     curr_str = curr_elem.replace("-","").lower()
                     ticker_words = curr_elem.replace("-"," ").split(" ")#for walmart and other
                     metrix = difflib.SequenceMatcher(None,curr_str.replace(" ",""),extracted_str.replace(" ","")).ratio()
+                    if(len(extracted_words)==1 and len(ticker_words)==1 and metrix < 0.92):
+                        continue
                     if (metrix < 0.2 or extracted_elem == 'Not Avaliable'):
                         continue
                     if (metrix == 1.0 or curr_str.replace(" ","").replace("group","") == extracted_str.replace(" ","") or extracted_str.replace(" ","").replace("group","") == curr_str.replace(" ","") or curr_str.replace("&","and") == extracted_str or extracted_str.replace("&","and") == curr_str):
@@ -279,12 +285,12 @@ def parallel_func(rank):
                         max_metrix = 1.0
                         #isEnd = True
                         break
-                    if (max_metrix < 0.95 and is_extracted_contain_real(ticker_words,extracted_words) or extracted_str.replace(" ","").find(curr_str.replace(" ",""))!=-1) and len(curr_elem) > 3:
+                    if max_metrix < 0.95 and (is_extracted_contain_real(ticker_words,extracted_words) or extracted_str.find(curr_str.replace(" ",""))!=-1) and len(curr_elem) > 3 and len(extracted_words)>1:
                         max_elem = curr_elem
                         best_extracted = extracted_elem
                         #print("OK, for sure? ",max_elem, best_extracted)
                         max_metrix = 0.95
-                        #isEnd = True
+                        #is_extracted_contain_real(ticker_words,extracted_words) or extracted_str.replace(" ","").find(curr_str.replace(" ",""))!=-1)
                     if(only_commonly_used_is_common(ticker_words,extracted_words)):
                         continue
                     if (metrix > 0.3 and len(extracted_str) > 2 and (len(curr_str) > 2) and (is_valid_match(ticker_words,extracted_words,curr_str,extracted_str) or 
@@ -294,11 +300,11 @@ def parallel_func(rank):
                             max_metrix = 0.86 + metrix/10.0
                             max_elem = curr_elem
                             best_extracted = extracted_elem
-                    if (is_abbreviation(curr_elem,extracted_elem) or is_abbreviation(extracted_elem,curr_elem)):
-                        if(0.81 + metrix/10.0 > max_metrix):
-                            max_metrix = 0.81
-                            max_elem = curr_elem
-                            best_extracted = extracted_elem
+#                    if (is_abbreviation(curr_elem,extracted_elem) or is_abbreviation(extracted_elem,curr_elem)):
+#                        if(0.81 > max_metrix):
+#                            max_metrix = 0.81
+#                            max_elem = curr_elem
+#                            best_extracted = extracted_elem
                     if common_mixed_word(extracted_str,curr_str):
                         if(0.85 + metrix/10.0 > max_metrix):
                             max_metrix = 0.85 + metrix/10.0
@@ -322,7 +328,7 @@ def parallel_func(rank):
                         isFound = True
             if (not isFound):
                 not_found_companies.append(labeled_elem+str(idx)) 
-    return res_df,found_num,total,not_found_companies
+    return res_df,found_num,total,not_found_companies, total_extracted_companies
 
 
 # In[53]:
@@ -345,7 +351,9 @@ print(results[0][1])
 total_num1 = 0
 found_num1 = 0
 frames = []
+total_comp_extracted = 0
 for i in range(PROCESSES):
+    total_comp_extracted += results[i][4]
     total_num1 += results[i][2]
     found_num1 += results[i][1]
     frames.append(results[i][0])
@@ -353,6 +361,7 @@ for i in range(PROCESSES):
 print("accuracy: ",found_num1 / total_num1)
 print("found:",found_num1)
 print("total:",total_num1)
+print("total comp extracted:",total_comp_extracted)
 res = pd.DataFrame()
 missed = pd.DataFrame()
 res = pd.concat(frames)
@@ -363,7 +372,7 @@ print(res.head())
 # In[82]:
 
 
-res.to_csv("blind_extraction_results_parallel.csv",index=False)
+res.to_csv("blind_extraction_results_parallel_flair_500(1).csv",index=False)
 
 missed.to_csv("parallel_missed_companies.csv",index=False)
 
